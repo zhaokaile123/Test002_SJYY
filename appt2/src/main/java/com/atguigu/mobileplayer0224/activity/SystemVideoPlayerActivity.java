@@ -257,11 +257,21 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     }
 
 
+    private final int SHOW_NET_SPEED = 3; //显示网速
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what) {
+                case SHOW_NET_SPEED:
+                    if(isNetUri){
+                        String netSpeed = utils.getNetSpeed(SystemVideoPlayerActivity.this);
+                        tv_net_speed.setText(netSpeed);
+                        tv_loading_net_speed.setText(netSpeed);
+                    }
+                    sendEmptyMessageDelayed(SHOW_NET_SPEED,1000);
+                    break;
+
                 case PROGRESS:
                     //得到当前进度
                     int currentPosition = vv.getCurrentPosition();
