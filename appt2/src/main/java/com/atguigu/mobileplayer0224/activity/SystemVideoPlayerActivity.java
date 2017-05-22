@@ -91,6 +91,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private int maxVoice;
     //是否静音
     private boolean isMute = false;
+    private boolean isNetUri = true;
 
     /**
      * Find the Views in the layout<br />
@@ -261,6 +262,20 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                     //得到系统时间
                     tvSystemTime.setText(getSystemTime());
 
+                    //更新  视频缓存 的进度条
+                    if(isNetUri){
+                        int bufferPercentage = vv.getBufferPercentage();//0~100;
+                        int totalBuffer = bufferPercentage*seekbarVideo.getMax();
+                        int secondaryProgress =totalBuffer/100;
+                        seekbarVideo.setSecondaryProgress(secondaryProgress);
+                    }else{
+                        seekbarVideo.setSecondaryProgress(0); //不是网络的就设置缓存条为0；
+                    }
+                 //
+
+
+
+
                     //循环发消息
                     sendEmptyMessageDelayed(PROGRESS, 1000);
 
@@ -308,6 +323,9 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             MediaItem mediaItem = mediaItems.get(position);
             tvName.setText(mediaItem.getName());
             vv.setVideoPath(mediaItem.getData());
+
+            //判断是否为网络 uri  然后再handler中去 更新 缓存的进度条
+            isNetUri = utils.isNetUri(mediaItem.getData());
 
         } else if (uri != null) {
             //设置播放地址
@@ -558,13 +576,14 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         if (position > 0) {
             //还是在列表范围内容
             MediaItem mediaItem = mediaItems.get(position);
+
+            isNetUri = utils.isNetUri(mediaItem.getData());
+
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
 
             //设置按钮状态
             setButtonStatus();
-
-
         }
 
     }
@@ -574,6 +593,9 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         if (position < mediaItems.size()) {
             //还是在列表范围内容
             MediaItem mediaItem = mediaItems.get(position);
+
+            isNetUri = utils.isNetUri(mediaItem.getData());//判断是否为网络的uri
+
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
 
