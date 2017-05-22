@@ -92,6 +92,12 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     //是否静音
     private boolean isMute = false;
     private boolean isNetUri = true;
+    private int proPosition; // 视频播放的前一个进度
+
+    private LinearLayout ll_loading;
+    private TextView tv_loading_net_speed;
+    private LinearLayout ll_buffering;
+    private TextView tv_net_speed;
 
     /**
      * Find the Views in the layout<br />
@@ -118,6 +124,11 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         btnNext = (Button) findViewById(R.id.btn_next);
         btnSwitchScreen = (Button) findViewById(R.id.btn_switch_screen);
         vv = (VideoView) findViewById(R.id.vv);
+
+        ll_loading = (LinearLayout)findViewById(R.id.ll_loading); //等待线性布局
+        tv_loading_net_speed = (TextView)findViewById(R.id.tv_loading_net_speed);//等待时候的网速
+        ll_buffering = (LinearLayout)findViewById(R.id.ll_buffering); //缓冲的线性布局
+        tv_net_speed = (TextView)findViewById(R.id.tv_net_speed); //缓冲的网速
 
         btnVoice.setOnClickListener(this);
         btnSwitchPlayer.setOnClickListener(this);
@@ -245,6 +256,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         }
     }
 
+
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -271,10 +283,19 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                     }else{
                         seekbarVideo.setSecondaryProgress(0); //不是网络的就设置缓存条为0；
                     }
-                 //
+                 //视频卡的时候设置 卡 
+                    if(isNetUri && vv.isPlaying()) {  //如果是网络视频  并且正在播放
+                        int duration = currentPosition - proPosition;
+                        if(duration < 500){   //如果播放的时长小于 500毫秒 ，表示卡
+                            ll_buffering.setVisibility(View.VISIBLE); //卡的时候缓冲出现
 
+                            //此时 ll-loading会一直显示，所有在视频 准备好的时候隐藏它
 
-
+                        }else{
+                            ll_buffering.setVisibility(View.GONE);
+                        }
+                        proPosition = currentPosition;;
+                    }
 
                     //循环发消息
                     sendEmptyMessageDelayed(PROGRESS, 1000);
@@ -309,10 +330,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
         setListener();
         setData();
-
-        //设置控制面板
-//        vv.setMediaController(new MediaController(this));
-
 
     }
 
@@ -479,6 +496,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
                 //默认隐藏
                 hideMediaController();
+
+                ll_loading.setVisibility(View.GONE);
 
                 //设置默认屏幕
                 setVideoType(DEFUALT_SCREEN);
